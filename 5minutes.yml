@@ -1,6 +1,6 @@
 ---
 - name: First 5 minutes in new servers
-  hosts: webservers
+  hosts: servers
   become: yes
   become_user: root
   vars_files:
@@ -37,11 +37,10 @@
       notify: Restart ssh
 
     - name: Install required packages
-      apt: state=installed pkg={{ item }}
+      apt: state=present pkg={{ item }}
       with_items:
       - "{{ required_packages }}"
 
-    # Allow only ssh and http(s) ports
     - name: Allow ssh and http(s) connections
       ufw: rule=allow port={{ item }}
       with_items:

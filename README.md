@@ -1,52 +1,31 @@
-# 5Minutes - Server Security Essentials
+# 5Minutes
 
-**Secure your Linux server with single command!**
-
-A while back, I read this [article][1] about what you should do first when you get new server.
-Doing so manually is quite boring though, and error prone. So, I tried to automate with [Ansible][2], 
-and added few extra security features like completely disabling root and password login etc.
- 
+Base server setup. Forked from [this](https://github.com/chhantyal/5minutes) which is based on [this](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) with some changes.
 
 ## Install
 
-So you have new servers with root access, please follow these steps.
- 
-1. Install Ansible on your local computer. It's really easy if you have updated `Python`
- 
- ```sudo pip install ansible```
+Assuming the server is created with `root` ssh access.
 
-2. Clone this repo and change `hosts` file with IP address of your servers.
- 
- ```git clone git@github.com:chhantyal/5minutes.git && cd 5minutes && open -t hosts```
-
-3. Change var `server_user_password` in `vars.yml` file with crypted password. 
-This will be password for `server_user_name`. To generate, run:
-
- ```sudo pip install passlib```    
- ```python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"```
+On the local machine with `pipenv` installed, run `pipenv install`
 
 ## Usage
 
-Using it is very easy. From within in `5minutes` directory, run this Ansible command.
+1. Clone the repo
 
-```ansible-playbook 5minutes.yml -u <user_name> -K```
+2. Change the `hosts` file with the server information
 
-Enter password for your server and that't it. Single command!
+3. Configure the variables in `vars.yml`, or override it when running:
 
-## Try with Vagrant
+```
+pipenv run ansible-playbook 5minutes.yml -u <ssh_username> \
+  --extra-vars "server_user_name=<username> server_user_password=$(pipenv run python generate_password.py)"
+```
 
-You can try on Vagrant box before running this on real servers.
-There is `Vagrantfile` included.
+* Run `pipenv run python generate_password.py |> pbcopy` to generate a password to be copied into `vars.yml`
 
-```vagrant up```
+### What it does:
 
-Change `hosts` to `127.1.1.0:2200` (see `vagrant up` output for exact port) and run command:
-
-```ansible-playbook 5minutes.yml -u vagrant --private-key .vagrant/machines/default/virtualbox/private_key```
-
-### Under the Hood
-
-If you are wondering what it does, here it is:
+It setups:
 
 - Connects to server using SSH
 - Updates APT cache
@@ -59,21 +38,14 @@ If you are wondering what it does, here it is:
 - It also installs `unattended-upgrades` to enable automatic security updates.
 
 
-### Notes
+### Variables
 
-There are few other variables that you need/might want to change. See `vars:` defined in `vars.yml` file.
+Configurable params in the `vars.yml`
 
-- `server_user_name`: default `trinity`
-- `server_user_password`: Please change this. See [Ansible docs][3]
+- `server_user_name`: default `username`
+- `server_user_password`: Can use the `generate_password.py` script.
 - `logwatch_email`: default `devops@example.com`, you won't get report email from `logwatch` if you don't change.
 - `user_public_keys`: default `~/.ssh/id_rsa.pub`, if you use different key pair name, you need to change this path
  to public key file.
 
-Ansible is perfect for this automation because it's dead simple to install and use without having to learn it.    
-It uses SSH as agent, so you don't need to setup anything else.
-
-PS: This is tested on Ubuntu, as that's what I use. You are welcome to add support for other distributions :)
-
-[1]: https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers
-[2]: https://www.ansible.com
-[3]: http://docs.ansible.com/ansible/faq.html#how-do-i-generate-crypted-passwords-for-the-user-module
+Specify the the python interpreter path on each server in the `hosts` file

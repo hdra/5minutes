@@ -1,2 +1,6 @@
-[webservers]
-127.0.0.1
+[servers]
+server.host
+
+[servers:vars]
+ansible_python_interpreter=/usr/bin/python3
+
