@@ -63,6 +63,67 @@
                   regexp="^/usr/sbin/logwatch"
                   line="/usr/sbin/logwatch --output mail --mailto {{ logwatch_email }} --detail high"
                   state=present create=yes
+
+    - name: Setup unattended upgrades interval
+      lineinfile:
+        dest: /etc/apt/apt.conf.d/10periodic
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - {
+          regexp: '^APT::Periodic::Update-Package-Lists',
+          line: 'APT::Periodic::Update-Package-Lists "1";'
+        }
+        - {
+          regexp: '^APT::Periodic::Download-Upgradeable-Packages',
+          line: 'APT::Periodic::Download-Upgradeable-Packages "1";'
+        }
+        - {
+          regexp: '^APT::Periodic::AutocleanInterval',
+          line: 'APT::Periodic::AutocleanInterval "7";'
+        }
+        - {
+          regexp: '^APT::Periodic::Unattended-Upgrade',
+          line: 'APT::Periodic::Unattended-Upgrade "1";'
+        }
+    - name: Setup unattended upgrades channel
+      lineinfile:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: "{{ item.state }}"
+      with_items:
+        - {
+          regexp: '^\s*"\${distro_id}:\${distro_codename}";',
+          line: '"${distro_id}:${distro_codename}";',
+          state: present
+        }
+        - {
+          regexp: '^\s*"\${distro_id}:\${distro_codename}-security";',
+          line: '"${distro_id}:${distro_codename}-security";',
+          state: present
+        }
+        - {
+          regexp: '^\s*"\${distro_id}ESM:\${distro_codename}";',
+          line: '"${distro_id}ESM:${distro_codename}";',
+          state: present
+        }
+        - {
+          regexp: '^\s*"\${distro_id}:\${distro_codename}-updates";',
+          line: '"${distro_id}:${distro_codename}-updates";',
+          state: absent
+        }
+        - {
+          regexp: '^\s*"\${distro_id}:\${distro_codename}-proposed";',
+          line: '"${distro_id}:${distro_codename}-proposed";',
+          state: absent
+        }
+        - {
+          regexp: '^\s*"\${distro_id}:\${distro_codename}-backports";',
+          line: '"${distro_id}:${distro_codename}-backports";',
+          state: absent
+        }
+
   handlers:
     - name: Restart ssh
       service: name=ssh state=restarted

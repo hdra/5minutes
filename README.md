@@ -17,7 +17,7 @@ On the local machine with `pipenv` installed, run `pipenv install`
 3. Configure the variables in `vars.yml`, or override it when running:
 
 ```
-pipenv run ansible-playbook 5minutes.yml -u <ssh_username> \
+pipenv run ansible-playbook 5minutes.yml -u <ssh_username> -K \
   --extra-vars "server_user_name=<username> server_user_password=$(pipenv run python generate_password.py)"
 ```
 
